@@ -4,17 +4,17 @@ import os
 
 def load_csv_data():
     """
-    Prompts the user for a filename, checks if it exists, 
+    Prompts the user for a filename, checks if it exists,
     and extracts all fields into a list of dictionaries.
     """
     filename = input("Enter the name of the CSV file to process (e.g., grades.csv): ")
-    
+
     if not os.path.exists(filename):
         print(f"Error: The file '{filename}' was not found.")
         sys.exit(1)
-        
+
     assignments = []
-    
+
     try:
         with open(filename, mode='r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
@@ -33,24 +33,53 @@ def load_csv_data():
 
 def evaluate_grades(data):
     """
-    Implement your logic here.
     'data' is a list of dictionaries containing the assignment records.
     """
     print("\n--- Processing Grades ---")
-    
-    # TODO: a) Check if all scores are percentage based (0-100)
-    # TODO: b) Validate total weights (Total=100, Summative=40, Formative=60)
-    # TODO: c) Calculate the Final Grade and GPA
-    # TODO: d) Determine Pass/Fail status (>= 50% in BOTH categories)
-    # TODO: e) Check for failed formative assignments (< 50%)
-    #          and determine which one(s) have the highest weight for resubmission.
-    # TODO: f) Print the final decision (PASSED / FAILED) and resubmission options
-    
-    pass
+
+    # Refuse to work with an empty file
+    if len(data) == 0:
+        print("Error: the file has no grade records to process.")
+        return
+
+    # a) Check every score is between 0 and 100
+    bad_scores = []
+    for row in data:
+        if row['score'] < 0 or row['score'] > 100:
+            bad_scores.append(row)
+
+    if len(bad_scores) > 0:
+        print("Invalid scores found (must be 0-100):")
+        for row in bad_scores:
+            print(f"  {row['assignment']}: {row['score']}")
+        return
+    print("All scores are valid.")
+
+    # b) Validate the weights: total 100, Formative 60, Summative 40
+    total_weight = 0
+    formative_weight = 0
+    summative_weight = 0
+    for row in data:
+        total_weight += row['weight']
+        if row['group'] == 'Formative':
+            formative_weight += row['weight']
+        else:
+            summative_weight += row['weight']
+
+    if abs(total_weight - 100) > 0.01:
+        print(f"Error: total weight must be 100, but it is {total_weight}.")
+        return
+    if abs(formative_weight - 60) > 0.01:
+        print(f"Error: Formative weights must total 60, but they total {formative_weight}.")
+        return
+    if abs(summative_weight - 40) > 0.01:
+        print(f"Error: Summative weights must total 40, but they total {summative_weight}.")
+        return
+    print("Weight distribution is valid (100 total, 60/40 split).")
 
 if __name__ == "__main__":
     # 1. Load the data
     course_data = load_csv_data()
-    
+
     # 2. Process the features
     evaluate_grades(course_data)
