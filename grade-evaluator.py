@@ -98,6 +98,32 @@ def evaluate_grades(data):
     print(f"Formative category: {formative_earned:.2f} / {formative_weight:.0f} ({formative_percent:.2f}%)")
     print(f"Summative category: {summative_earned:.2f} / {summative_weight:.0f} ({summative_percent:.2f}%)")
 
+    # d) Pass/Fail: must reach 50% in BOTH categories
+    if formative_percent >= 50 and summative_percent >= 50:
+        status = "PASSED"
+    else:
+        status = "FAILED"
+    print(f"\nFinal Status: {status}")
+
+    # e) + f) Resubmission: failed formatives carrying the highest weight (ties included)
+    failed_formatives = []
+    for row in data:
+        if row['group'] == 'Formative' and row['score'] < 50:
+            failed_formatives.append(row)
+
+    if len(failed_formatives) == 0:
+        print("No formative assignments need resubmission.")
+    else:
+        highest_weight = 0
+        for row in failed_formatives:
+            if row['weight'] > highest_weight:
+                highest_weight = row['weight']
+
+        print("Eligible for resubmission (failed formative(s) with the highest weight):")
+        for row in failed_formatives:
+            if row['weight'] == highest_weight:
+                print(f"  {row['assignment']} (score {row['score']:.0f}, weight {row['weight']:.0f})")
+
 if __name__ == "__main__":
     # 1. Load the data
     course_data = load_csv_data()
