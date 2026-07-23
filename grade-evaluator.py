@@ -77,6 +77,27 @@ def evaluate_grades(data):
         return
     print("Weight distribution is valid (100 total, 60/40 split).")
 
+    # c) Calculate the final grade, GPA, and category percentages
+    total_grade = 0
+    formative_earned = 0
+    summative_earned = 0
+    for row in data:
+        contribution = row['score'] * row['weight'] / 100
+        total_grade += contribution
+        if row['group'] == 'Formative':
+            formative_earned += contribution
+        else:
+            summative_earned += contribution
+
+    gpa = (total_grade / 100) * 5.0
+    formative_percent = formative_earned / formative_weight * 100
+    summative_percent = summative_earned / summative_weight * 100
+
+    print(f"\nFinal Grade: {total_grade:.2f} / 100")
+    print(f"GPA: {gpa:.3f} / 5.0")
+    print(f"Formative category: {formative_earned:.2f} / {formative_weight:.0f} ({formative_percent:.2f}%)")
+    print(f"Summative category: {summative_earned:.2f} / {summative_weight:.0f} ({summative_percent:.2f}%)")
+
 if __name__ == "__main__":
     # 1. Load the data
     course_data = load_csv_data()
